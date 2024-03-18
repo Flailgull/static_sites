@@ -4,10 +4,10 @@ from htmlnode import (
     HTMLNode
 )
 
-class TestTextNode(unittest.TestCase):
+class TestHTMLNode(unittest.TestCase):
     def test_repr(self):
         node = HTMLNode("tag", "value", "children", "props")
-        expected_text = "HTMLNode: tag - tag, value - value, children - children, props - props"
+        expected_text = "HTMLNode(tag - tag, value - value, children - children, props - props)"
         node_text = node.__repr__()
         self.assertEqual(node_text, expected_text)
 
