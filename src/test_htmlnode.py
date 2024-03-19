@@ -13,7 +13,7 @@ class TestHTMLNode(unittest.TestCase):
 
     def test_props_to_html(self):
         node = HTMLNode("tag", "value", "children", {"dummy": "dummy_value", "dummy2": "dummy2_value"})
-        expected_text = "dummy=\"dummy_value\" dummy2=\"dummy2_value\""
+        expected_text = " dummy=\"dummy_value\" dummy2=\"dummy2_value\""
         self.assertEqual(node.props_to_html(), expected_text)
 
     def test_to_html_not_implemented(self):
