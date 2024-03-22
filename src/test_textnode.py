@@ -1,14 +1,6 @@
 import unittest
 
-from textnode import (
-    TextNode,
-    text_type_text,
-    text_type_bold,
-    text_type_italic,
-    text_type_code,
-    text_type_image,
-    text_type_link,
-)
+from textnode import *
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
