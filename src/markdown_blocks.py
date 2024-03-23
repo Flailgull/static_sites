@@ -1,4 +1,7 @@
 import re 
+from htmlnode import *
+from leafnode import *
+from parentnode import *
 
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
@@ -50,3 +53,72 @@ def block_to_block_type(block):
         return block_type_ordered_list
     return block_type_paragraph
 
+def block_to_HTMLNode(block, block_type):
+    if block_type == block_type_paragraph:
+        return block_to_paragraph(block)
+    if block_type == block_type_heading:
+        return block_to_heading(block)
+    if block_type == block_type_code:
+        return block_to_code(block)
+    if block_type == block_type_quote:
+        return block_to_quote(block)
+    if block_type == block_type_unordered_list:
+        return block_to_unordered_list(block)
+    if block_type == block_type_ordered_list:
+        return block_to_ordered_list(block)
+
+def block_to_paragraph(block):
+    return LeafNode("p", block)
+
+def block_to_heading(block):
+    if block.startswith("######"):
+        return LeafNode("h6", block[7:])
+    if block.startswith("#####"):
+        return LeafNode("h5", block[6:])
+    if block.startswith("####"):
+        return LeafNode("h4", block[5:])
+    if block.startswith("###"):
+        return LeafNode("h3", block[4:])
+    if block.startswith("##"):
+        return LeafNode("h2", block[3:])
+    if block.startswith("#"):
+        return LeafNode("h1", block[2:])
+
+def block_to_code(block):
+    inner_node = LeafNode("code", block[3:-3])
+    outer_node = ParentNode("pre", [inner_node])
+    return outer_node
+
+def block_to_quote(block):
+    lines = block.split("\n")
+    new_lines = list(map(lambda line: line[1:], lines))
+    text = "\n".join(new_lines)
+    return LeafNode("blockquote", text)
+
+def block_to_unordered_list(block):
+    lines = block.split("\n")
+    inner_nodes = []
+    for line in lines:
+        inner_nodes.append(LeafNode("li", line[1:].strip()))
+    outer_node = ParentNode("ul", inner_nodes)
+    return outer_node
+
+def block_to_ordered_list(block):
+    lines = block.split("\n")
+    inner_nodes = []
+    line_counter = 1
+    for line in lines:
+        inner_nodes.append(LeafNode("li", line[len(f"{line_counter}."):].strip()))
+        line_counter += 1
+    outer_node = ParentNode("ol", inner_nodes)
+    return outer_node
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    inner_nodes = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        node = block_to_HTMLNode(block, block_type)
+        inner_nodes.append(node)
+    parent = ParentNode("div", inner_nodes)
+    return parent
