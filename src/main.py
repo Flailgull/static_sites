@@ -35,16 +35,50 @@ def move_stuff_r(srcdir, destdir):
         #if it's a file
         if os.path.isfile(entity_name):
             shutil.copy(entity_name, os.path.join(destdir, stuff))
+            print(f"copied {entity_name} to {os.path.join(destdir, stuff)}")
         #if it's a directory
         else:
             new_dest = os.path.join(destdir, stuff)
             os.mkdir(new_dest)
+            print(f"created folder {new_dest}")
             move_stuff_r(entity_name, new_dest)
 
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    if not os.path.exists(from_path) or not os.path.isabs(from_path):
+        from_path = os.path.join(os.getcwd(), from_path)
+
+    if not os.path.exists(template_path) or not os.path.isabs(template_path):
+        template_path = os.path.join(os.getcwd(), template_path)
+
+    if not os.path.isabs(dest_path):
+        dest_path = os.path.join(os.getcwd(), dest_path)
+
+    markdown_file =  open(from_path)
+    markdown_contents = markdown_file.read()
+    markdown_file.close()
+
+    template_file = open(template_path)
+    template_contents = template_file.read()
+    template_file.close()
+    
+    html = markdown_to_html_node(markdown_contents).to_html()
+    title = extract_title(markdown_contents)
+    html_contents = template_contents.replace("{{ Title }}", title).replace("{{ Content }}", html)
+
+    path = os.path.dirname(dest_path)
+    if not os.path.exists(path):        
+        os.mkdir(path)
+    
+    dest_file = open(dest_path, "w")
+    dest_file.write(html_contents)
+    dest_file.close()
+
 def main():
-    test = TextNode("text", "text_type", "url")
+    #open(os.path.join(os.getcwd(),  "src/main.py"))
     cwd = os.getcwd()
     move_stuff(os.path.join(cwd, "static"), os.path.join(cwd, "public"))
+    generate_page("content/index.md", "template.html", "public/index.html")
 
 
 

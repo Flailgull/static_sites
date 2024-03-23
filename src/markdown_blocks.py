@@ -11,6 +11,13 @@ block_type_quote = "quote"
 block_type_unordered_list = "unordered_list"
 block_type_ordered_list = "ordered_list"
 
+def extract_title(markdown):
+    lines = markdown.split("\n")
+    for line in lines:
+        if line.startswith("#"):
+            return line[1:].strip()
+    raise ValueError("Needs at least one h1 header like '# Header'")
+
 def markdown_to_blocks(markdown):
     blocks = markdown.split("\n\n")
     filtered_blocks = []
