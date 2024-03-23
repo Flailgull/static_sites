@@ -2,6 +2,7 @@ import re
 from htmlnode import *
 from leafnode import *
 from parentnode import *
+from inline_markdown import *
 
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
@@ -67,39 +68,54 @@ def block_to_HTMLNode(block, block_type):
     if block_type == block_type_ordered_list:
         return block_to_ordered_list(block)
 
+def text_to_children(text):
+    text_nodes = text_to_textnodes(text)
+    children = []
+    for text_node in text_nodes:
+        html_node = text_node_to_html_node(text_node)
+        children.append(html_node)
+    return children
+
 def block_to_paragraph(block):
-    return LeafNode("p", block)
+    lines = block.split("\n")
+    paragraph = " ".join(lines)
+    children = text_to_children(paragraph)
+    return ParentNode("p", children)
 
 def block_to_heading(block):
-    if block.startswith("######"):
-        return LeafNode("h6", block[7:])
-    if block.startswith("#####"):
-        return LeafNode("h5", block[6:])
-    if block.startswith("####"):
-        return LeafNode("h4", block[5:])
-    if block.startswith("###"):
-        return LeafNode("h3", block[4:])
-    if block.startswith("##"):
-        return LeafNode("h2", block[3:])
-    if block.startswith("#"):
-        return LeafNode("h1", block[2:])
+    level = 0
+    for char in block:
+        if char == "#":
+            level += 1
+        else:
+            break
+    if level + 1 >= len(block):
+        raise ValueError(f"Invalid heading level: {level}")
+    text = block[level + 1 :]
+    children = text_to_children(text)
+    return ParentNode(f"h{level}", children)
 
 def block_to_code(block):
-    inner_node = LeafNode("code", block[3:-3])
-    outer_node = ParentNode("pre", [inner_node])
-    return outer_node
+    text = block[3:-3]
+    children = text_to_children(text)
+    code = ParentNode("code", children)
+    parent = ParentNode("pre", [code])
+    return parent
 
 def block_to_quote(block):
     lines = block.split("\n")
     new_lines = list(map(lambda line: line[1:], lines))
-    text = "\n".join(new_lines)
-    return LeafNode("blockquote", text)
+    text = " ".join(new_lines)
+    children = text_to_children(text)
+    return ParentNode("blockquote", children)
 
 def block_to_unordered_list(block):
     lines = block.split("\n")
     inner_nodes = []
     for line in lines:
-        inner_nodes.append(LeafNode("li", line[1:].strip()))
+        text = line[1:].strip()
+        children = text_to_children(text)
+        inner_nodes.append(ParentNode("li", children))
     outer_node = ParentNode("ul", inner_nodes)
     return outer_node
 
@@ -108,7 +124,9 @@ def block_to_ordered_list(block):
     inner_nodes = []
     line_counter = 1
     for line in lines:
-        inner_nodes.append(LeafNode("li", line[len(f"{line_counter}."):].strip()))
+        text = line[len(f"{line_counter}."):].strip()
+        children = text_to_children(text)
+        inner_nodes.append(ParentNode("li", children))
         line_counter += 1
     outer_node = ParentNode("ol", inner_nodes)
     return outer_node

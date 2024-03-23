@@ -69,7 +69,9 @@ This is the same paragraph on a new line
 
     def test_block_to_heading(self):
         heading_paragraph = "### Testheading"
-        expected_node = LeafNode("h3", "Testheading")
+        expected_node = ParentNode("h3", [
+            LeafNode(None, "Testheading")
+        ])
         actual_node = block_to_heading(heading_paragraph)
 
         self.assertEqual(expected_node, actual_node)
@@ -77,15 +79,19 @@ This is the same paragraph on a new line
     def test_block_to_code(self):
         code_block = "```Codeblock stuf code bla```"
         
-        expected_node = ParentNode("pre", [LeafNode("code", "Codeblock stuf code bla")])
+        expected_node = ParentNode("pre", [
+            ParentNode("code", [LeafNode(None, "Codeblock stuf code bla")])
+        ])
         actual_node = block_to_code(code_block)
 
         self.assertEqual(expected_node, actual_node)
 
-    def test_block_to_code(self):
+    def test_block_to_quote(self):
         quote_block_multiline = ">Line1\n>Line2\n>Line3"
 
-        expected_node = LeafNode("blockquote", "Line1\nLine2\nLine3")
+        expected_node = ParentNode("blockquote", [
+            LeafNode(None, "Line1 Line2 Line3")
+        ])
         actual_node = block_to_quote(quote_block_multiline)
 
         self.assertEqual(expected_node, actual_node)
@@ -94,16 +100,24 @@ This is the same paragraph on a new line
         self.maxDiff = None
         unordered_list_block = "*item\n*otheritem\n*last_item"
 
-        expected_node = ParentNode("ul", [LeafNode("li", "item"), LeafNode("li", "otheritem"), LeafNode("li", "last_item")])
+        expected_node = ParentNode("ul", [
+            ParentNode("li", [LeafNode(None, "item")]),
+            ParentNode("li", [LeafNode(None, "otheritem")]), 
+            ParentNode("li", [LeafNode(None, "last_item")])
+        ])
         actual_node = block_to_unordered_list(unordered_list_block)
 
         self.assertEqual(expected_node, actual_node)
 
-    def test_block_to_unordered_list(self):
+    def test_block_to_ordered_list(self):
         self.maxDiff = None
         ordered_list_block = "1. item\n2. otheritem\n3. last_item"
 
-        expected_node = ParentNode("ol", [LeafNode("li", "item"), LeafNode("li", "otheritem"), LeafNode("li", "last_item")])
+        expected_node = ParentNode("ol", [
+            ParentNode("li", [LeafNode(None, "item")]), 
+            ParentNode("li", [LeafNode(None, "otheritem")]), 
+            ParentNode("li", [LeafNode(None, "last_item")])
+        ])
         actual_node = block_to_ordered_list(ordered_list_block)
 
         self.assertEqual(expected_node, actual_node)
@@ -117,9 +131,18 @@ This is a paragraph of text. It has some **bold** and *italic* words inside of i
 * This is a list item
 * This is another list item"""
         expected_node = ParentNode("div", [
-            LeafNode("h1", "This is a heading"),
-            LeafNode("p", "This is a paragraph of text. It has some **bold** and *italic* words inside of it."),
-            ParentNode("ul", [LeafNode("li", "This is a list item"), LeafNode("li", "This is another list item")])
+            ParentNode("h1", [LeafNode(None, "This is a heading")]),
+            ParentNode("p", [
+                LeafNode(None, "This is a paragraph of text. It has some "),
+                LeafNode("b", "bold"),
+                LeafNode(None, " and "),
+                LeafNode("i", "italic"),
+                LeafNode(None, " words inside of it.")
+            ]),
+            ParentNode("ul", [
+                ParentNode("li", [LeafNode(None, "This is a list item")]),
+                ParentNode("li", [LeafNode(None,"This is another list item")])
+            ])
         ])
         actual_node = markdown_to_html_node(markdown)
 
