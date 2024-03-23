@@ -57,5 +57,37 @@ class TestInlineMarkdown(unittest.TestCase):
         actual = extract_markdown_links(text)
         self.assertEqual(expected, actual)
 
+    def test_split_nodes_image(self):
+        self.maxDiff = None
+        node = TextNode(
+                "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+                text_type_text,        
+        )
+        new_nodes = split_nodes_image([node])
+        excpected_nodes = [
+            TextNode("This is text with an ", text_type_text),
+            TextNode("image", text_type_image, "https://i.imgur.com/zjjcJKZ.png"),
+            TextNode(" and another ", text_type_text),
+            TextNode(
+                "second image", text_type_image, "https://i.imgur.com/3elNhQu.png"
+            )
+        ]
+        self.assertEqual(new_nodes, excpected_nodes)
+
+    def test_split_nodes_link(self):
+        self.maxDiff = None
+        node = TextNode(
+                "This is text with a [link](https://www.example.com) and [another](https://www.example.com/another)",
+                text_type_text,        
+        )
+        new_nodes = split_nodes_link([node])
+        excpected_nodes = [
+            TextNode("This is text with a ", text_type_text),
+            TextNode("link", text_type_link, "https://www.example.com"),
+            TextNode(" and ", text_type_text),
+            TextNode("another", text_type_link, "https://www.example.com/another")
+        ]
+        self.assertEqual(new_nodes, excpected_nodes)
+
 if __name__ == "__main__":
     unittest.main()
