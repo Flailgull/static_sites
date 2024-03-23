@@ -1,6 +1,7 @@
 import unittest
 
 from textnode import *
+from inline_markdown import *
 
 class TestInlineMarkdown(unittest.TestCase):
     def test_split_nodes_delimiter_1(self):
@@ -40,6 +41,21 @@ class TestInlineMarkdown(unittest.TestCase):
             new_nodes = split_nodes_delimiter([node], "`", text_type_code)
         
         self.assertEqual(context.exception.__repr__(), expected_error.__repr__())
+
+
+    def test_extract_markdown_images(self):
+        self.maxDiff = None
+        text = "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and ![another](https://i.imgur.com/dfsdkjfd.png)"
+        expected = [("image", "https://i.imgur.com/zjjcJKZ.png"), ("another", "https://i.imgur.com/dfsdkjfd.png")]
+        actual = extract_markdown_images(text)
+        self.assertEqual(expected, actual)
+
+    def test_extract_markdown_links(self):
+        self.maxDiff = None
+        text = "This is text with a [link](https://www.example.com) and [another](https://www.example.com/another)"
+        expected = [("link", "https://www.example.com"), ("another", "https://www.example.com/another")]
+        actual = extract_markdown_links(text)
+        self.assertEqual(expected, actual)
 
 if __name__ == "__main__":
     unittest.main()
