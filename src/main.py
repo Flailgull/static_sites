@@ -74,11 +74,23 @@ def generate_page(from_path, template_path, dest_path):
     dest_file.write(html_contents)
     dest_file.close()
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    list_of_stuff = os.listdir(dir_path_content)
+    for stuff in list_of_stuff:
+        abs_path = os.path.join(dir_path_content, stuff)
+        abs_dest = os.path.join(dest_dir_path, stuff)
+        if os.path.isfile(abs_path):
+            if abs_path.endswith(".md"):
+                abs_dest = os.path.splitext(abs_dest)[0] + ".html"
+                generate_page(abs_path, template_path, abs_dest)
+        else:
+            generate_pages_recursive(abs_path, template_path, abs_dest)
+
 def main():
     #open(os.path.join(os.getcwd(),  "src/main.py"))
     cwd = os.getcwd()
     move_stuff(os.path.join(cwd, "static"), os.path.join(cwd, "public"))
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive(os.path.join(cwd, "content"), os.path.join(cwd, "template.html"), os.path.join(cwd, "public"))
 
 
 
